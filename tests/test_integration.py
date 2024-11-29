@@ -1,5 +1,5 @@
 from textwrap import dedent
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 import pytest
 from django.db.models import Count
@@ -19,23 +19,29 @@ class TestPatching:
         unpatch()
         reset_query_counter()
 
-    @pytest.mark.django_db
-    def test_unpatched_compilers(self):
-        Community.objects.create(name="test")
-        Community.objects.update(name="new")
-        Community.objects.get(name="new")
-        Community.objects.aggregate(count=Count("id"))
-        Community.objects.all().delete()
+    @pytest.mark.parametrize(
+        "using_db", ["default", "mysql"], ids=["sqlite", "mysql"]
+    )
+    @pytest.mark.django_db(databases=['default', 'mysql'])
+    def test_unpatched_compilers(self, using_db):
+        Community.objects.using(using_db).create(name="test")
+        Community.objects.using(using_db).update(name="new")
+        Community.objects.using(using_db).get(name="new")
+        Community.objects.using(using_db).aggregate(count=Count("id"))
+        Community.objects.using(using_db).all().delete()
         assert query_counts.get() == {}
 
-    @pytest.mark.django_db
-    def test_patched_compilers(self, patch):
-        Community.objects.create(name="test")
-        Community.objects.update(name="new")
-        Community.objects.get(name="new")
-        Community.objects.aggregate(count=Count("id"))
+    @pytest.mark.parametrize(
+        "using_db", ["default", "mysql"], ids=["sqlite", "mysql"]
+    )
+    @pytest.mark.django_db(databases=['default', 'mysql'])
+    def test_patched_compilers(self, using_db, patch):
+        Community.objects.using(using_db).create(name="test")
+        Community.objects.using(using_db).update(name="new")
+        Community.objects.using(using_db).get(name="new")
+        Community.objects.using(using_db).aggregate(count=Count("id"))
         assert query_counts.get() == {"testapp.Community": 4}
-        Community.objects.all().delete()
+        Community.objects.using(using_db).all().delete()
         assert query_counts.get() == {"testapp.Community": 6, "testapp.Chapter": 1, "testapp.Community_topics": 1}
 
 class TestAssertModelNumQueriesContext:

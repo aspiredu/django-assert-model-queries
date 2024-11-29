@@ -25,6 +25,11 @@ def patch_sql_compilers_for_debugging():
     _SQLUpdateCompiler = compiler.SQLUpdateCompiler
     _SQLDeleteCompiler = compiler.SQLDeleteCompiler
     _SQLAggregateCompiler = compiler.SQLAggregateCompiler
+    _MySQLCompiler = mysql_compiler.SQLCompiler
+    _MySQLInsertCompiler = mysql_compiler.SQLInsertCompiler
+    _MySQLUpdateCompiler = mysql_compiler.SQLUpdateCompiler
+    _MySQLDeleteCompiler = mysql_compiler.SQLDeleteCompiler
+    _MySQLAggregateCompiler = mysql_compiler.SQLAggregateCompiler
 
 
     class DebugSQLCompiler(_SQLCompiler):
@@ -52,11 +57,42 @@ def patch_sql_compilers_for_debugging():
         def execute_sql(self, *args, **kwargs):
             return super().execute_sql(*args, **kwargs)
 
+    class DebugMySQLCompiler(_MySQLCompiler):
+        @count_queries
+        def execute_sql(self, *args, **kwargs):
+            return super().execute_sql(*args, **kwargs)
+
+    class DebugMySQLInsertCompiler(_MySQLInsertCompiler):
+        @count_queries
+        def execute_sql(self, *args, **kwargs):
+            return super().execute_sql(*args, **kwargs)
+
+    class DebugMySQLUpdateCompiler(_MySQLUpdateCompiler):
+        @count_queries
+        def execute_sql(self, *args, **kwargs):
+            return super().execute_sql(*args, **kwargs)
+
+    class DebugMySQLDeleteCompiler(_MySQLDeleteCompiler):
+        @count_queries
+        def execute_sql(self, *args, **kwargs):
+            return super().execute_sql(*args, **kwargs)
+
+    class DebugMySQLAggregateCompiler(_MySQLAggregateCompiler):
+        @count_queries
+        def execute_sql(self, *args, **kwargs):
+            return super().execute_sql(*args, **kwargs)
+
+
     compiler.SQLCompiler = DebugSQLCompiler
     compiler.SQLInsertCompiler = DebugSQLInsertCompiler
     compiler.SQLUpdateCompiler = DebugSQLUpdateCompiler
     compiler.SQLDeleteCompiler = DebugSQLDeleteCompiler
     compiler.SQLAggregateCompiler = DebugSQLAggregateCompiler
+    mysql_compiler.SQLCompiler = DebugMySQLCompiler
+    mysql_compiler.SQLInsertCompiler = DebugMySQLInsertCompiler
+    mysql_compiler.SQLUpdateCompiler = DebugMySQLUpdateCompiler
+    mysql_compiler.SQLDeleteCompiler = DebugMySQLDeleteCompiler
+    mysql_compiler.SQLAggregateCompiler = DebugMySQLAggregateCompiler
 
     def unpatch():
         compiler.SQLCompiler = _SQLCompiler
@@ -64,5 +100,10 @@ def patch_sql_compilers_for_debugging():
         compiler.SQLUpdateCompiler = _SQLUpdateCompiler
         compiler.SQLDeleteCompiler = _SQLDeleteCompiler
         compiler.SQLAggregateCompiler = _SQLAggregateCompiler
+        mysql_compiler.SQLCompiler = _MySQLCompiler
+        mysql_compiler.SQLInsertCompiler = _MySQLInsertCompiler
+        mysql_compiler.SQLUpdateCompiler = _MySQLUpdateCompiler
+        mysql_compiler.SQLDeleteCompiler = _MySQLDeleteCompiler
+        mysql_compiler.SQLAggregateCompiler = _MySQLAggregateCompiler
 
     return unpatch
