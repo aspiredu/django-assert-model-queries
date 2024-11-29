@@ -37,7 +37,7 @@ When an unexpected query runs, this ``AssertModelQueriesContext`` will
 tell you which model generated an unexpected query.
 
 
-### Example
+### Example error
 
 Here is an example of what you can expect from the tool:
 
@@ -74,7 +74,7 @@ All queries:
 SELECT "auth_user"."id" FROM "auth_user" ORDER BY "auth_user"."id" ASC LIMIT 1
 ```
 
-### pytest
+### Integrating with pytest
 
 If you use pytest, you can use the fixture ``assert_model_queries`` as a short-cut.
 
@@ -99,7 +99,7 @@ class TestPytestIntegration:
             Community.objects.all().delete()
 ```
 
-### unittest
+### Integrating with unittest
 
 If you test with Django's ``TestCase``, inherit from the mixin
 ``ModelNumQueriesHelper`` to be able to utilize the
