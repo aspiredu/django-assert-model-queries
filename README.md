@@ -20,7 +20,9 @@ which use the context manager,
 hood.
 
 The basic usage is to define a dictionary of expected queries to be
-evaluated at the end of the context manager's scope.
+evaluated at the end of the context manager's scope. If the counts
+differ, a helpful error message will be rendered indicating what the
+differences were and what *all* the queries were during the context.
 
 ```python
 from django_assert_model_queries import AssertModelQueriesContext
@@ -33,6 +35,44 @@ with AssertModelQueriesContext({"testapp.Community": 2}):
 
 When an unexpected query runs, this ``AssertModelQueriesContext`` will
 tell you which model generated an unexpected query.
+
+
+### Example
+
+Here is an example of what you can expect from the tool:
+
+```pycon
+In [1]: from django_assert_model_queries import AssertModelQueriesContext
+   ...: from django.contrib.auth.models import User
+   ...: with AssertModelQueriesContext({}):
+   ...:     User.objects.first()
+   ...:
+---------------------------------------------------------------------------
+AssertionError                            Traceback (most recent call last)
+Cell In[1], line 3
+      1 from django_assert_model_queries import AssertModelQueriesContext
+      2 from django.contrib.auth.models import User
+----> 3 with AssertModelQueriesContext({}):
+      4     User.objects.only("id").first()
+
+File ~/site-packages/django_assert_model_queries/test.py:145, in AssertModelQueriesContext.__exit__(self, exc_type, exc_value, traceback)
+    142 if exc_type is not None:
+    143     return
+--> 145 self.handle_assertion(actual, expected)
+    146 self.expected_model_counts = None
+
+File ~/site-packages/django_assert_model_queries/test.py:172, in AssertModelQueriesContext.handle_assertion(self, actual, expected)
+    170         pytest.fail(self.failure_message(actual, expected))
+    171 else:
+--> 172     assert actual == expected, self.failure_message(actual, expected)
+
+AssertionError: {'auth.User': 1} != {}
+- {'auth.User': 1}
++ {}
+
+All queries:
+SELECT "auth_user"."id" FROM "auth_user" ORDER BY "auth_user"."id" ASC LIMIT 1
+```
 
 ### pytest
 
