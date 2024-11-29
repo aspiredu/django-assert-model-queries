@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 (2024-11-29)
+
+* Getting the versioning in sync, no functional changes.
+
 ## 1.0.1 (2024-11-29)
 
 * Switching to PyPI-GitHub trusted publisher release flow.

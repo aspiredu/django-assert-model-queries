@@ -5,7 +5,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "django-assert-model-queries"
-version = "1.0.0"
+version = "1.0.2"
 description = "A Django test utility to assert the number of queries per model."
 readme = "README.md"
 keywords = [ "django", "pytest", "test" ]
