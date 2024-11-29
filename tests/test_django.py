@@ -27,20 +27,28 @@ class TestDjangoIntegration(ModelNumQueriesHelper, TestCase):
         ):
             Community.objects.all().delete()
 
+
+class TestDjangoTestCaseHelper(ModelNumQueriesHelper, TestCase):
+    databases = {"default", "mysql"}
+
     def test_helper(self):
-        with self.assertModelNumQueries({"testapp.Community": 1}):
-            Community.objects.create(name="test")
-        with self.assertModelNumQueries({"testapp.Community": 1}):
-            Community.objects.update(name="new")
-        with self.assertModelNumQueries({"testapp.Community": 1}):
-            Community.objects.get(name="new")
-        with self.assertModelNumQueries({"testapp.Community": 1}):
-            Community.objects.aggregate(count=Count("id"))
-        with self.assertModelNumQueries(
-            {
-                "testapp.Community": 2,
-                "testapp.Chapter": 1,
-                "testapp.Community_topics": 1,
-            }
-        ):
-            Community.objects.all().delete()
+        manager = Community.objects
+        for db in ["default", "mysql"]:
+            with self.subTest(db=db):
+                with self.assertModelNumQueries({"testapp.Community": 1}, using=db):
+                    manager.using(db).create(name="test")
+                with self.assertModelNumQueries({"testapp.Community": 1}, using=db):
+                    manager.using(db).update(name="new")
+                with self.assertModelNumQueries({"testapp.Community": 1}, using=db):
+                    manager.using(db).get(name="new")
+                with self.assertModelNumQueries({"testapp.Community": 1}, using=db):
+                    manager.using(db).aggregate(count=Count("id"))
+                with self.assertModelNumQueries(
+                    {
+                        "testapp.Community": 2,
+                        "testapp.Chapter": 1,
+                        "testapp.Community_topics": 1,
+                    },
+                    using=db,
+                ):
+                    manager.using(db).all().delete()

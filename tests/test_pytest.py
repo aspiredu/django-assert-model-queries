@@ -1,4 +1,5 @@
 import pytest
+from _pytest.outcomes import Failed
 from django.db.models import Count
 
 from tests.testapp.models import Community
@@ -23,3 +24,9 @@ class TestPytestIntegration:
             }
         ):
             Community.objects.all().delete()
+
+    @pytest.mark.django_db
+    def test_handle_assertion_fail(self, assert_model_queries):
+        with pytest.raises(Failed):
+            with assert_model_queries({"testapp.Community": 0}):
+                Community.objects.create(name="test")

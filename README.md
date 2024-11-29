@@ -58,6 +58,5 @@ not something that should be relied upon in production.
 
 ## TODO:
 
-- Patch the MySQL compilers
 - Write tests and docs for ignore
 - Write tests and docs for non-strict eval
