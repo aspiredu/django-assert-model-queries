@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 1.1.0 (2024-11-29)
 
 * Shortened the name ``AssertModelQueriesContext`` to ``AssertModelQueries``.
 
