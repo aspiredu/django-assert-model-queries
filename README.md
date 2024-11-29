@@ -42,11 +42,11 @@ tell you which model generated an unexpected query.
 Here is an example of what you can expect from the tool:
 
 ```pycon
-In [1]: from django_assert_model_queries import AssertModelQueriesContext
-   ...: from django.contrib.auth.models import User
-   ...: with AssertModelQueriesContext({}):
-   ...:     User.objects.first()
-   ...:
+>>>  from django_assert_model_queries import AssertModelQueriesContext
+>>>  from django.contrib.auth.models import User
+>>>  with AssertModelQueriesContext({}):
+>>>      User.objects.first()
+
 ---------------------------------------------------------------------------
 AssertionError                            Traceback (most recent call last)
 Cell In[1], line 3
