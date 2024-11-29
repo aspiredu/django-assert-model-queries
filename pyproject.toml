@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "django_assert_model_queries"
+version = "1.0.0"
+authors = [
+  { name="Tim Schilling", email="tim@aspiredu.com" },
+]
+description = "A Django test utility to assert the number of queries per model."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: Django :: 4.2",
+  "Framework :: Django :: 5.0",
+  "Framework :: Django :: 5.1",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+    "Framework :: Pytest",
+]
+dependencies = [
+    "django>=4.2",
+]
+keywords = ["django", "test", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/aspiredu/django-assert-model-queries"
+Issues = "https://github.com/aspiredu/django-assert-model-queries/issues"
+Changelog = "https://github.com/aspiredu/django-assert-model-queries/blob/main/CHANGELOG.md"
+
+[project.entry-points.pytest11]
+django_assert_model_queries = "django_assert_model_queries.pytest"
+
+[project.optional-dependencies]
+pytest = ["pytest-django"]
+
+
+[tool.pytest.ini_options]
+addopts = """\
+    --strict-config
+    --strict-markers
+    --ds=tests.settings
+    """
+django_find_project = false
+xfail_strict = true
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = [
+  "django_assert_model_queries",
+  "tests",
+]
+
+[tool.coverage.paths]
+source = [
+  "src",
+  ".tox/**/site-packages",
+]
+
+
+[tool.coverage.report]
+show_missing = true

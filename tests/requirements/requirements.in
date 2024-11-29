@@ -1,0 +1,6 @@
+coverage[toml]
+django
+mysqlclient
+pytest
+pytest-django
+pytest-randomly
