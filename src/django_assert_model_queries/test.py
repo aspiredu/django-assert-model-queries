@@ -41,7 +41,7 @@ class ExpectedModelCountsNotSet(ValueError):
     """
 
 
-class AssertModelNumQueriesContext(CaptureQueriesContext):
+class AssertModelQueriesContext(CaptureQueriesContext):
     unpatch = None
 
     def __init__(
@@ -51,13 +51,42 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
         ignore=None,
         test_case=None,
         connection=None,
-        verbosity=0,
     ):
+        """
+        Assert the number of queries per model match what's expected.
+
+
+        Usage:
+
+            with AssertModelQueriesContext({"MyModel": 1}):
+                do_something()
+
+
+        :param expected_model_counts: The pairs of models to counts. The
+                                      keys can be model classes, instances
+                                      or the model label such as
+                                      `app_name.ModelName`. This can be a
+                                      list or tuple or tuples, or a dictionary.
+        :param strict: Defaults to True. When True, any difference in counts
+                       for any model causes a failure. When False, only
+                       differences in model counts for those specified in
+                       `expected_model_counts` are evaluated. Warning, this
+                       can hide N+1 issues.
+        :param ignore: A collection of model classes, instances or strings of
+                       the model label's such as `app_name.ModelName`. Any
+                       queries due to these models are not evaluated. This is
+                       helpful when wanting to ignore queries that happen on
+                       every request such as when using a database backed
+                       session.
+        :param test_case: The test case to evaluate. This is only used
+                          by the Django TestCase helper class.
+        :param connection: The database connection to use. If not
+                           specified, it uses the default.
+        """
         self.strict = strict
         self.ignore_models = (
             {normalize_key(instance) for instance in ignore} if ignore else set()
         )
-        self.verbosity = verbosity
         self.test_case = test_case
         self.expected_model_counts = (
             parse_counts(expected_model_counts)
@@ -68,6 +97,10 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
         super().__init__(connection)
 
     def find_actual(self, actual, expected):
+        """
+        Identify relevant models that had queries based on
+        strictness and any ignored models.
+        """
         if not self.strict:
             actual = {
                 model: count for model, count in actual.items() if model in expected
@@ -81,6 +114,7 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
         return actual
 
     def __enter__(self):
+        """Patch the compiler classes to collect queries per model"""
         reset_query_counter()
         if self.expected_model_counts is None:
             raise ExpectedModelCountsNotSet(
@@ -90,6 +124,13 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
         return super().__enter__()
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """
+        When exiting from a context manager's scope, evaluate
+        the number of queries per model against expectations.
+
+        This also unpatches the compiler classes and resets the
+        query counter.
+        """
         super().__exit__(exc_type, exc_value, traceback)
 
         expected = self.expected_model_counts
@@ -105,11 +146,19 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
         self.expected_model_counts = None
 
     def __call__(self, expected_model_counts=None):
+        """
+        Support reconfiguring the expected model counts
+        when creating a new context manager.
+        """
         if expected_model_counts is not None:
             self.expected_model_counts = parse_counts(expected_model_counts)
         return self
 
     def handle_assertion(self, actual, expected):
+        """
+        Evaluate the differences and render a failure
+        message if needed.
+        """
         if self.test_case:
             self.test_case.assertDictEqual(
                 actual,
@@ -120,6 +169,12 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
             pytest.fail(self.failure_message(actual, expected))
 
     def failure_message(self, actual, expected):
+        """
+        Generate a failure message.
+
+        This is based on Django's _AssertNumQueriesContext'
+        failure message.
+        """
         short = "%s != %s" % _common_shorten_repr(actual, expected)
         diff = "\n" + "\n".join(
             difflib.ndiff(
@@ -134,11 +189,25 @@ class AssertModelNumQueriesContext(CaptureQueriesContext):
 
 
 class ModelNumQueriesHelper:
-    def assertModelNumQueries(
+    """
+    Inherit from this mixin to use `self.assertModelQueries`.
+    """
+
+    def assertModelQueries(
         self, expected_model_counts, using=DEFAULT_DB_ALIAS, **kwargs
     ):
+        """
+        A helper assertion method that is used as a context manager.
+
+        Usage:
+
+            def test_something(self):
+                with self.assertModelQueries({"MyModel": 1}):
+                    do_something()
+
+        """
         conn = connections[using]
 
-        return AssertModelNumQueriesContext(
+        return AssertModelQueriesContext(
             expected_model_counts=expected_model_counts, test_case=self, connection=conn
         )

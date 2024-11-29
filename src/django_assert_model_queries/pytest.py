@@ -1,8 +1,18 @@
 import pytest
 
-from .test import AssertModelNumQueriesContext
+from .test import AssertModelQueriesContext
 
 
 @pytest.fixture(scope="session")
-def assert_model_queries(request):
-    return AssertModelNumQueriesContext(verbosity=request.config.option.verbose)
+def assert_model_queries():
+    """
+    An assertion fixture that is used as a context manager.
+
+    Usage:
+
+        def test_something(self, assert_model_queries):
+            with assert_model_queries({"MyModel": 1}):
+                do_something()
+
+    """
+    return AssertModelQueriesContext()

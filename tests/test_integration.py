@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from django.db.models import Count
 
-from django_assert_model_queries import AssertModelNumQueriesContext
+from django_assert_model_queries import AssertModelQueriesContext
 from django_assert_model_queries.patch import (
     query_counts,
     reset_query_counter,
@@ -66,10 +66,10 @@ class TestPatching:
         }
 
 
-class TestAssertModelNumQueriesContext:
+class TestAssertModelQueriesContext:
     @pytest.fixture
     def assert_context(self):
-        context = AssertModelNumQueriesContext(
+        context = AssertModelQueriesContext(
             connection=Mock(queries=[{"sql": "SELECT * FROM testapp.community"}])
         )
         context.initial_queries = 0
@@ -78,7 +78,7 @@ class TestAssertModelNumQueriesContext:
 
     @pytest.mark.django_db
     def test_call_expects_overrides_init(self):
-        context = AssertModelNumQueriesContext({"testapp.Community": 0})
+        context = AssertModelQueriesContext({"testapp.Community": 0})
         with context({"testapp.Community": 1}):
             assert Community.objects.first() is None
             assert context.expected_model_counts == {"testapp.Community": 1}
@@ -112,7 +112,7 @@ class TestAssertModelNumQueriesContext:
         )
 
     def test_expected_model_counts_not_set(self):
-        context = AssertModelNumQueriesContext()
+        context = AssertModelQueriesContext()
         with pytest.raises(ExpectedModelCountsNotSet):
             with context():
                 pass  # pragma: no cover
@@ -134,7 +134,7 @@ class TestAssertModelNumQueriesContext:
 
     @pytest.mark.django_db
     def test_exception_still_unpatches(self):
-        context = AssertModelNumQueriesContext()
+        context = AssertModelQueriesContext()
 
         class KnownException(Exception):
             pass
