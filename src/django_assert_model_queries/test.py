@@ -165,8 +165,11 @@ class AssertModelQueriesContext(CaptureQueriesContext):
                 expected,
                 self.failure_message(actual, expected),
             )
-        elif pytest and actual != expected:
-            pytest.fail(self.failure_message(actual, expected))
+        elif pytest:
+            if actual != expected:
+                pytest.fail(self.failure_message(actual, expected))
+        else:
+            assert actual == expected, self.failure_message(actual, expected)
 
     def failure_message(self, actual, expected):
         """

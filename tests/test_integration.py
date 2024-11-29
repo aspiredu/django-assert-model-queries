@@ -1,7 +1,8 @@
 from textwrap import dedent
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+from _pytest.outcomes import Failed
 from django.db.models import Count
 
 from django_assert_model_queries import AssertModelQueriesContext
@@ -174,3 +175,12 @@ class TestUtils:
     )
     def test_parse_counts(self, input, expected):
         assert parse_counts(input) == expected
+
+
+@patch("django_assert_model_queries.test.pytest", None)
+@pytest.mark.django_db
+def test_handle_assertion_not_testing():
+    with pytest.raises(AssertionError) as exc_info:
+        with AssertModelQueriesContext([]):
+            assert Community.objects.first() is None
+    assert not issubclass(exc_info.type, Failed)
