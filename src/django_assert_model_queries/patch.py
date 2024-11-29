@@ -5,10 +5,11 @@ from functools import wraps
 from django.db.models.sql import compiler
 from django.db.backends.mysql import compiler as mysql_compiler
 
-query_counts = ContextVar("query_counts", default=defaultdict(lambda: 0))
+query_counts = ContextVar("query_counts", default=defaultdict(int))
+
 
 def reset_query_counter(**kwargs):
-    query_counts.set(defaultdict(lambda: 0))
+    query_counts.set(defaultdict(int))
 
 
 def count_queries(func):
@@ -17,7 +18,9 @@ def count_queries(func):
         key = self.query.model._meta.label
         query_counts.get()[key] += 1
         return func(self, *args, **kwargs)
+
     return wrapper
+
 
 def patch_sql_compilers_for_debugging():
     _SQLCompiler = compiler.SQLCompiler
@@ -30,7 +33,6 @@ def patch_sql_compilers_for_debugging():
     _MySQLUpdateCompiler = mysql_compiler.SQLUpdateCompiler
     _MySQLDeleteCompiler = mysql_compiler.SQLDeleteCompiler
     _MySQLAggregateCompiler = mysql_compiler.SQLAggregateCompiler
-
 
     class DebugSQLCompiler(_SQLCompiler):
         @count_queries
@@ -81,7 +83,6 @@ def patch_sql_compilers_for_debugging():
         @count_queries
         def execute_sql(self, *args, **kwargs):
             return super().execute_sql(*args, **kwargs)
-
 
     compiler.SQLCompiler = DebugSQLCompiler
     compiler.SQLInsertCompiler = DebugSQLInsertCompiler

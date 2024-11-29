@@ -5,7 +5,11 @@ import pytest
 from django.db.models import Count
 
 from django_assert_model_queries import AssertModelNumQueriesContext
-from django_assert_model_queries.patch import query_counts, reset_query_counter, patch_sql_compilers_for_debugging
+from django_assert_model_queries.patch import (
+    query_counts,
+    reset_query_counter,
+    patch_sql_compilers_for_debugging,
+)
 
 from tests.testapp.models import Community
 
@@ -19,10 +23,8 @@ class TestPatching:
         unpatch()
         reset_query_counter()
 
-    @pytest.mark.parametrize(
-        "using_db", ["default", "mysql"], ids=["sqlite", "mysql"]
-    )
-    @pytest.mark.django_db(databases=['default', 'mysql'])
+    @pytest.mark.parametrize("using_db", ["default", "mysql"], ids=["sqlite", "mysql"])
+    @pytest.mark.django_db(databases=["default", "mysql"])
     def test_unpatched_compilers(self, using_db):
         Community.objects.using(using_db).create(name="test")
         Community.objects.using(using_db).update(name="new")
@@ -31,10 +33,8 @@ class TestPatching:
         Community.objects.using(using_db).all().delete()
         assert query_counts.get() == {}
 
-    @pytest.mark.parametrize(
-        "using_db", ["default", "mysql"], ids=["sqlite", "mysql"]
-    )
-    @pytest.mark.django_db(databases=['default', 'mysql'])
+    @pytest.mark.parametrize("using_db", ["default", "mysql"], ids=["sqlite", "mysql"])
+    @pytest.mark.django_db(databases=["default", "mysql"])
     def test_patched_compilers(self, using_db, patch):
         Community.objects.using(using_db).create(name="test")
         Community.objects.using(using_db).update(name="new")
@@ -42,12 +42,19 @@ class TestPatching:
         Community.objects.using(using_db).aggregate(count=Count("id"))
         assert query_counts.get() == {"testapp.Community": 4}
         Community.objects.using(using_db).all().delete()
-        assert query_counts.get() == {"testapp.Community": 6, "testapp.Chapter": 1, "testapp.Community_topics": 1}
+        assert query_counts.get() == {
+            "testapp.Community": 6,
+            "testapp.Chapter": 1,
+            "testapp.Community_topics": 1,
+        }
+
 
 class TestAssertModelNumQueriesContext:
     @pytest.fixture
     def assert_context(self):
-        context = AssertModelNumQueriesContext(connection=Mock(queries=[{"sql": "SELECT * FROM testapp.community"}]))
+        context = AssertModelNumQueriesContext(
+            connection=Mock(queries=[{"sql": "SELECT * FROM testapp.community"}])
+        )
         context.initial_queries = 0
         context.final_queries = 1
         return context
@@ -60,7 +67,9 @@ class TestAssertModelNumQueriesContext:
             assert context.expected_model_counts == {"testapp.Community": 1}
 
     def test_failure_message(self, assert_context):
-        assert assert_context.failure_message({"djangonaut.Space": 1}, {"django.Commons": 2}) == dedent(
+        assert assert_context.failure_message(
+            {"djangonaut.Space": 1}, {"django.Commons": 2}
+        ) == dedent(
             """            {'djangonaut.Space': 1} != {'django.Commons': 2}
             - {'djangonaut.Space': 1}
             + {'django.Commons': 2}
@@ -84,4 +93,3 @@ class TestAssertModelNumQueriesContext:
             All queries:
             SELECT * FROM testapp.community"""
         )
-

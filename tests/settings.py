@@ -17,7 +17,7 @@ DATABASES = {
         "PORT": os.environ.get("MYSQL_PORT", ""),
         "OPTIONS": {"charset": "utf8mb4"},
         "TEST": {"COLLATION": "utf8mb4_general_ci", "CHARSET": "utf8mb4"},
-    }
+    },
 }
 
 TIME_ZONE = "UTC"

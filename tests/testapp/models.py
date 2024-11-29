@@ -10,12 +10,13 @@ class Community(models.Model):
 
 
 class Chapter(models.Model):
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name="chapters")
+    community = models.ForeignKey(
+        Community, on_delete=models.CASCADE, related_name="chapters"
+    )
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
-
 
 
 class Topic(models.Model):
@@ -23,4 +24,3 @@ class Topic(models.Model):
 
     def __str__(self):
         return self.name
-
