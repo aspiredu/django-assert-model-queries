@@ -1,6 +1,6 @@
 import pytest
 
-from .test import AssertModelQueriesContext
+from .test import AssertModelQueries
 
 
 @pytest.fixture(scope="session")
@@ -15,4 +15,4 @@ def assert_model_queries():
                 do_something()
 
     """
-    return AssertModelQueriesContext()
+    return AssertModelQueries()

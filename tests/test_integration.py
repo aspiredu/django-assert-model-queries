@@ -5,7 +5,7 @@ import pytest
 from _pytest.outcomes import Failed
 from django.db.models import Count
 
-from django_assert_model_queries import AssertModelQueriesContext
+from django_assert_model_queries import AssertModelQueries
 from django_assert_model_queries.patch import (
     query_counts,
     reset_query_counter,
@@ -67,10 +67,10 @@ class TestPatching:
         }
 
 
-class TestAssertModelQueriesContext:
+class TestAssertModelQueries:
     @pytest.fixture
     def assert_context(self):
-        context = AssertModelQueriesContext(
+        context = AssertModelQueries(
             connection=Mock(queries=[{"sql": "SELECT * FROM testapp.community"}])
         )
         context.initial_queries = 0
@@ -79,7 +79,7 @@ class TestAssertModelQueriesContext:
 
     @pytest.mark.django_db
     def test_call_expects_overrides_init(self):
-        context = AssertModelQueriesContext({"testapp.Community": 0})
+        context = AssertModelQueries({"testapp.Community": 0})
         with context({"testapp.Community": 1}):
             assert Community.objects.first() is None
             assert context.expected_model_counts == {"testapp.Community": 1}
@@ -113,7 +113,7 @@ class TestAssertModelQueriesContext:
         )
 
     def test_expected_model_counts_not_set(self):
-        context = AssertModelQueriesContext()
+        context = AssertModelQueries()
         with pytest.raises(ExpectedModelCountsNotSet):
             with context():
                 pass  # pragma: no cover
@@ -135,7 +135,7 @@ class TestAssertModelQueriesContext:
 
     @pytest.mark.django_db
     def test_exception_still_unpatches(self):
-        context = AssertModelQueriesContext()
+        context = AssertModelQueries()
 
         class KnownException(Exception):
             pass
@@ -181,6 +181,6 @@ class TestUtils:
 @pytest.mark.django_db
 def test_handle_assertion_not_testing():
     with pytest.raises(AssertionError) as exc_info:
-        with AssertModelQueriesContext([]):
+        with AssertModelQueries([]):
             assert Community.objects.first() is None
     assert not issubclass(exc_info.type, Failed)

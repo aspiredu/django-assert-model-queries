@@ -1,1 +1,1 @@
-from .test import AssertModelQueriesContext, ModelNumQueriesHelper  # noqa: F401
+from .test import AssertModelQueries, ModelNumQueriesHelper  # noqa: F401

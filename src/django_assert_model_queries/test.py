@@ -41,7 +41,7 @@ class ExpectedModelCountsNotSet(ValueError):
     """
 
 
-class AssertModelQueriesContext(CaptureQueriesContext):
+class AssertModelQueries(CaptureQueriesContext):
     unpatch = None
 
     def __init__(
@@ -58,7 +58,7 @@ class AssertModelQueriesContext(CaptureQueriesContext):
 
         Usage:
 
-            with AssertModelQueriesContext({"MyModel": 1}):
+            with AssertModelQueries({"MyModel": 1}):
                 do_something()
 
 
@@ -211,6 +211,6 @@ class ModelNumQueriesHelper:
         """
         conn = connections[using]
 
-        return AssertModelQueriesContext(
+        return AssertModelQueries(
             expected_model_counts=expected_model_counts, test_case=self, connection=conn
         )

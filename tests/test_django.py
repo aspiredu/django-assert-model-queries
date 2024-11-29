@@ -2,7 +2,7 @@ from django.db.models import Count
 from django.test import TestCase
 
 from django_assert_model_queries.test import (
-    AssertModelQueriesContext,
+    AssertModelQueries,
     ModelNumQueriesHelper,
 )
 from .testapp.models import Community
@@ -10,15 +10,15 @@ from .testapp.models import Community
 
 class TestDjangoIntegration(ModelNumQueriesHelper, TestCase):
     def test_assert_model_num_queries_context(self):
-        with AssertModelQueriesContext({"testapp.Community": 1}):
+        with AssertModelQueries({"testapp.Community": 1}):
             Community.objects.create(name="test")
-        with AssertModelQueriesContext({"testapp.Community": 1}):
+        with AssertModelQueries({"testapp.Community": 1}):
             Community.objects.update(name="new")
-        with AssertModelQueriesContext({"testapp.Community": 1}):
+        with AssertModelQueries({"testapp.Community": 1}):
             Community.objects.get(name="new")
-        with AssertModelQueriesContext({"testapp.Community": 1}):
+        with AssertModelQueries({"testapp.Community": 1}):
             Community.objects.aggregate(count=Count("id"))
-        with AssertModelQueriesContext(
+        with AssertModelQueries(
             {
                 "testapp.Community": 2,
                 "testapp.Chapter": 1,

@@ -16,7 +16,7 @@ not something that should be relied upon in production.
 
 There are integrations for both pytest and Django / `unittest`. Both of
 which use the context manager,
-``django_assert_model_queries.AssertModelQueriesContext`` under the
+``django_assert_model_queries.AssertModelQueries`` under the
 hood.
 
 The basic usage is to define a dictionary of expected queries to be
@@ -25,15 +25,15 @@ differ, a helpful error message will be rendered indicating what the
 differences were and what *all* the queries were during the context.
 
 ```python
-from django_assert_model_queries import AssertModelQueriesContext
+from django_assert_model_queries import AssertModelQueries
 from testapp.models import Community
 
-with AssertModelQueriesContext({"testapp.Community": 2}):
+with AssertModelQueries({"testapp.Community": 2}):
     Community.objects.create(name="test")
     Community.objects.update(name="test")
 ```
 
-When an unexpected query runs, this ``AssertModelQueriesContext`` will
+When an unexpected query runs, this ``AssertModelQueries`` will
 tell you which model generated an unexpected query.
 
 
@@ -42,26 +42,26 @@ tell you which model generated an unexpected query.
 Here is an example of what you can expect from the tool:
 
 ```pycon
->>>  from django_assert_model_queries import AssertModelQueriesContext
+>>>  from django_assert_model_queries import AssertModelQueries
 >>>  from django.contrib.auth.models import User
->>>  with AssertModelQueriesContext({}):
+>>>  with AssertModelQueries({}):
 >>>      User.objects.first()
 
 ---------------------------------------------------------------------------
 AssertionError                            Traceback (most recent call last)
 Cell In[1], line 3
-      1 from django_assert_model_queries import AssertModelQueriesContext
+      1 from django_assert_model_queries import AssertModelQueries
       2 from django.contrib.auth.models import User
-----> 3 with AssertModelQueriesContext({}):
+----> 3 with AssertModelQueries({}):
       4     User.objects.only("id").first()
 
-File ~/site-packages/django_assert_model_queries/test.py:145, in AssertModelQueriesContext.__exit__(self, exc_type, exc_value, traceback)
+File ~/site-packages/django_assert_model_queries/test.py:145, in AssertModelQueries.__exit__(self, exc_type, exc_value, traceback)
     142 if exc_type is not None:
     143     return
 --> 145 self.handle_assertion(actual, expected)
     146 self.expected_model_counts = None
 
-File ~/site-packages/django_assert_model_queries/test.py:172, in AssertModelQueriesContext.handle_assertion(self, actual, expected)
+File ~/site-packages/django_assert_model_queries/test.py:172, in AssertModelQueries.handle_assertion(self, actual, expected)
     170         pytest.fail(self.failure_message(actual, expected))
     171 else:
 --> 172     assert actual == expected, self.failure_message(actual, expected)
@@ -109,14 +109,14 @@ If you test with Django's ``TestCase``, inherit from the mixin
 # Django TestCase example
 
 from django.test import TestCase
-from django_assert_model_queries import AssertModelQueriesContext, ModelNumQueriesHelper
+from django_assert_model_queries import AssertModelQueries, ModelNumQueriesHelper
 from testapp.models import Community
 
 class TestDjangoIntegration(ModelNumQueriesHelper, TestCase):
     def test_assert_model_num_queries_context(self):
-        with AssertModelQueriesContext({"testapp.Community": 1}):
+        with AssertModelQueries({"testapp.Community": 1}):
             Community.objects.create(name="test")
-        with AssertModelQueriesContext({"testapp.Community": 2, "testapp.Chapter": 1, "testapp.Community_topics": 1}):
+        with AssertModelQueries({"testapp.Community": 2, "testapp.Chapter": 1, "testapp.Community_topics": 1}):
             Community.objects.all().delete()
 
 class TestDjangoHelperIntegration(ModelNumQueriesHelper, TestCase):
@@ -139,18 +139,18 @@ There are a few parameters that may help in certain scenarios.
   hide N+1 issues.
 
 To use these, you must specify them when instantiating
-``AssertModelQueriesContext``.
+``AssertModelQueries``.
 
 ```python
-from django_assert_model_queries import AssertModelQueriesContext
+from django_assert_model_queries import AssertModelQueries
 from django.contrib.sessions.models import Session
 
-assert_context = AssertModelQueriesContext(ignore={Session})
+assert_context = AssertModelQueries(ignore={Session})
 with assert_context({"testapp.Community": 1}):
     do_something()
 
 
-assert_context = AssertModelQueriesContext(strict=False)
+assert_context = AssertModelQueries(strict=False)
 with assert_context({"testapp.Community": 1}):
     do_something()
 ```
